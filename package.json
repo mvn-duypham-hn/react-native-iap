@@ -3,7 +3,7 @@
   "packageManager": "yarn@3.1.1",
   "version": "7.5.6",
   "description": "React Native In App Purchase Module.",
-  "main": "index.js",
+  "main": "index.ts",
   "types": "index.d.ts",
   "postinstall": "dooboolab-welcome postinstall",
   "scripts": {
