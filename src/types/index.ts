@@ -1,3 +1,5 @@
+import type * as Apple from './apple';
+
 export enum IAPErrorCode {
   E_IAP_NOT_AVAILABLE = 'E_IAP_NOT_AVAILABLE',
   E_UNKNOWN = 'E_UNKNOWN',
@@ -40,6 +42,9 @@ export enum InstallSourceAndroid {
 }
 
 export interface ProductCommon {
+  type: 'subs' | 'sub' | 'inapp' | 'iap';
+  productId: string; //iOS
+  productIds?: string[];
   title: string;
   description: string;
   price: string;
@@ -110,10 +115,10 @@ export interface Discount {
   subscriptionPeriod: string;
 }
 
-export interface Product extends ProductCommon {
-  type: 'inapp' | 'iap';
-  productId: string;
-}
+// export interface Product extends ProductCommon {
+//   type: 'inapp' | 'iap';
+//   productId: string;
+// }
 
 export interface Subscription extends ProductCommon {
   type: 'subs' | 'sub';
@@ -145,3 +150,58 @@ export interface Subscription extends ProductCommon {
   subscriptionPeriodAndroid?: string;
   freeTrialPeriodAndroid?: string;
 }
+
+export interface ProductAndroid extends ProductCommon {
+  type: 'inapp' | 'iap';
+  oneTimePurchaseOfferDetails?: {
+    priceCurrencyCode: string;
+    formattedPrice: string;
+    priceAmountMicros: string;
+  };
+}
+
+export interface ProductIOS extends ProductCommon {
+  type: 'inapp' | 'iap';
+}
+
+export type Product = ProductAndroid & ProductIOS;
+
+export interface RequestPurchaseBaseAndroid {
+  obfuscatedAccountIdAndroid?: string;
+  obfuscatedProfileIdAndroid?: string;
+  isOfferPersonalized?: boolean; // For AndroidBilling V5 https://developer.android.com/google/play/billing/integrate#personalized-price
+}
+
+export type Sku = string;
+
+export interface SubscriptionOffer {
+  sku: Sku;
+  offerToken: string;
+}
+
+export interface RequestSubscriptionAndroid extends RequestPurchaseBaseAndroid {
+  purchaseTokenAndroid?: string;
+  prorationModeAndroid?: ProrationModesAndroid;
+  subscriptionOffers: SubscriptionOffer[];
+}
+
+export interface RequestPurchaseIOS {
+  sku: Sku;
+  andDangerouslyFinishTransactionAutomaticallyIOS?: boolean;
+  /**
+   * UUID representing user account
+   */
+  appAccountToken?: string;
+  quantity?: number;
+  withOffer?: Apple.PaymentDiscount;
+}
+
+export type RequestSubscriptionIOS = RequestPurchaseIOS;
+
+/** As of 2022-10-12, we only use the `sku` field for Amazon subscriptions */
+export type RequestSubscriptionAmazon = RequestSubscriptionIOS;
+
+export type RequestSubscription =
+  | RequestSubscriptionAndroid
+  | RequestSubscriptionAmazon
+  | RequestSubscriptionIOS;

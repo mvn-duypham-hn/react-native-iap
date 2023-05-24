@@ -22,6 +22,7 @@ import {
   PurchaseStateAndroid,
   Subscription,
   SubscriptionPurchase,
+  RequestSubscription,
 } from './types';
 
 const {RNIapIos, RNIapModule, RNIapAmazonModule} = NativeModules;
@@ -287,16 +288,24 @@ export const requestPurchase = (
  * @returns {Promise<SubscriptionPurchase | null>} Promise resolves to null when using proratioModesAndroid=DEFERRED, and to a SubscriptionPurchase otherwise
  */
 export const requestSubscription = (
-  sku: string,
-  andDangerouslyFinishTransactionAutomaticallyIOS: boolean = false,
-  purchaseTokenAndroid: string | undefined = undefined,
-  prorationModeAndroid: ProrationModesAndroid = -1,
-  obfuscatedAccountIdAndroid: string | undefined = undefined,
-  obfuscatedProfileIdAndroid: string | undefined = undefined,
+  request: RequestSubscription,
+  // andDangerouslyFinishTransactionAutomaticallyIOS: boolean = false,
+  // purchaseTokenAndroid: string | undefined = undefined,
+  // prorationModeAndroid: ProrationModesAndroid = -1,
+  // obfuscatedAccountIdAndroid: string | undefined = undefined,
+  // obfuscatedProfileIdAndroid: string | undefined = undefined,
 ): Promise<SubscriptionPurchase | null> =>
   (
     Platform.select({
       ios: async () => {
+        const {
+          sku,
+          andDangerouslyFinishTransactionAutomaticallyIOS = false,
+          appAccountToken,
+          quantity,
+          withOffer,
+        } = request;
+
         if (andDangerouslyFinishTransactionAutomaticallyIOS) {
           // eslint-disable-next-line no-console
           console.warn(
@@ -311,9 +320,18 @@ export const requestSubscription = (
         );
       },
       android: async () => {
+        const {
+          subscriptionOffers,
+          purchaseTokenAndroid,
+          prorationModeAndroid = -1,
+          obfuscatedAccountIdAndroid,
+          obfuscatedProfileIdAndroid,
+          isOfferPersonalized,
+        } = request;
+
         return getAndroidModule().buyItemByType(
           ANDROID_ITEM_TYPE_SUBSCRIPTION,
-          sku,
+          subscriptionOffers?.map((so) => so.sku),
           purchaseTokenAndroid,
           prorationModeAndroid,
           obfuscatedAccountIdAndroid,
