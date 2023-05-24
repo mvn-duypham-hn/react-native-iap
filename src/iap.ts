@@ -336,6 +336,8 @@ export const requestSubscription = (
           prorationModeAndroid,
           obfuscatedAccountIdAndroid,
           obfuscatedProfileIdAndroid,
+          subscriptionOffers?.map((so) => so.offerToken),
+          isOfferPersonalized ?? false,
         );
       },
     }) || Promise.resolve
